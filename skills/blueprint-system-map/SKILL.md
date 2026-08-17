@@ -1,5 +1,7 @@
 ---
 name: blueprint-system-map
+version: 0.2.0
+agents: [claude-code, cursor, hermes, codex-cli]
 description: Draw any system as an isometric map on a vintage industrial engineering blueprint - 3D massing on a grid, routed dependency conduits with payload tags, legend, component schedule, dependency matrix, notes and a full title block, as one self-contained SVG. Use this whenever someone wants a system map, architecture or infrastructure diagram, service topology, dependency graph, data-flow map, process or plant layout, or a how-it-all-fits-together picture - especially if they say isometric, 3D, axonometric, blueprint, schematic, technical or engineering drawing, drafting, cyanotype, diazo, arc-reactor, retro-futurist, Soviet or vintage industrial. Also use it to redraw an existing diagram as something presentable, for a poster of an architecture, or a hero image for a design doc or deck. Prefer it over hand-written SVG, Mermaid or Graphviz whenever the request implies a picture of a system, not a plain box-and-arrow chart - those cannot produce isometric massing, drafting furniture or a title block.
 ---
 

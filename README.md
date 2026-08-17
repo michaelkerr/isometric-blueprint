@@ -53,6 +53,15 @@ Or install globally so it is available in every project:
 cp -r path/to/isometric-blueprint/skills/blueprint-system-map ~/.cursor/skills/
 ```
 
+**Hermes / Agent Plugins standard**
+
+Hermes discovers the root `plugin.json` and `skills/` directory automatically.
+Point it at the repo or copy the skill into your Hermes skills directory:
+
+```bash
+cp -r path/to/isometric-blueprint/skills/blueprint-system-map ~/.hermes/skills/
+```
+
 The plugin needs no connectors and no credentials.
 
 ## Using it
@@ -79,6 +88,7 @@ Or use the command:
 ## Repository layout
 
 ```
+plugin.json                         Agent Plugins standard manifest (Hermes, Codex, Copilot)
 .claude-plugin/plugin.json          Claude Code plugin manifest
 .cursor-plugin/plugin.json          Cursor plugin manifest
 .cursor/rules/system-map.mdc        Cursor rule (agent-requested)
