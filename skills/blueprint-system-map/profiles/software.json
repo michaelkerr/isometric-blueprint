@@ -1,0 +1,99 @@
+{
+  "id": "software",
+  "version": "SW-1.0",
+  "label": "Software / platform profile",
+  "kinds": {
+    "datastore": {
+      "form": "drum",
+      "note": "Store of record",
+      "band_forms": {}
+    },
+    "sharded-store": {
+      "form": "stack",
+      "note": "Partitioned or tiered store"
+    },
+    "bulk-store": {
+      "form": "vault",
+      "note": "Archive or warehouse"
+    },
+    "queue": {
+      "form": "silo",
+      "note": "Queue, stream or buffer"
+    },
+    "service": {
+      "form": "slab",
+      "note": "Compute",
+      "band_forms": { "3": "tower" }
+    },
+    "fleet": {
+      "form": "plinth",
+      "note": "Pool, farm or node group"
+    },
+    "aggregator": {
+      "form": "pyramid",
+      "note": "Reducer, gate or funnel"
+    },
+    "fabric": {
+      "form": "lattice",
+      "note": "Balancer, mesh or edge"
+    },
+    "external": {
+      "form": "dish",
+      "note": "Outside the trust boundary"
+    },
+    "authority": {
+      "form": "core",
+      "note": "Sole owner of state"
+    }
+  },
+  "aliases": {
+    "database": "datastore",
+    "db": "datastore",
+    "postgres": "datastore",
+    "mysql": "datastore",
+    "store": "datastore",
+    "cache": "datastore",
+    "shard": "sharded-store",
+    "sharded": "sharded-store",
+    "partitioned-store": "sharded-store",
+    "warehouse": "bulk-store",
+    "archive": "bulk-store",
+    "data-lake": "bulk-store",
+    "lake": "bulk-store",
+    "stream": "queue",
+    "topic": "queue",
+    "bus": "queue",
+    "event-bus": "queue",
+    "broker": "queue",
+    "buffer": "queue",
+    "api": "service",
+    "app": "service",
+    "worker": "service",
+    "microservice": "service",
+    "compute": "service",
+    "function": "service",
+    "job": "service",
+    "pool": "fleet",
+    "cluster": "fleet",
+    "farm": "fleet",
+    "nodes": "fleet",
+    "gateway": "fabric",
+    "load-balancer": "fabric",
+    "lb": "fabric",
+    "cdn": "fabric",
+    "edge": "fabric",
+    "mesh": "fabric",
+    "network": "fabric",
+    "proxy": "fabric",
+    "reducer": "aggregator",
+    "gate": "aggregator",
+    "funnel": "aggregator",
+    "third-party": "external",
+    "vendor": "external",
+    "saas": "external",
+    "partner": "external",
+    "core": "authority",
+    "control-plane": "authority",
+    "orchestrator": "authority"
+  }
+}

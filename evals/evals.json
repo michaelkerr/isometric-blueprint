@@ -1,0 +1,74 @@
+{
+  "skill_name": "blueprint-system-map",
+  "evals": [
+    {
+      "id": 0,
+      "name": "payments-platform-from-prose",
+      "prompt": "I've got an architecture review on Thursday and I'm sick of our diagrams looking like someone threw mermaid at a wall. Can you draw our payments stack as a proper isometric system map, old-school engineering blueprint style? Rough shape of it: traffic comes in through Cloudflare then our Kong gateway, gateway checks tokens against Keycloak. Two main services \u2014 payment-orchestrator (this is the important one, it owns transaction state) and a settlement-worker that runs the batch stuff. Orchestrator writes to an Aurora postgres cluster, publishes to SNS/SQS. Settlement worker reads the queue, talks out to Adyen for capture, and dumps into our Redshift warehouse nightly. Everything ships traces to Datadog. Restricted internal doc, I'm the author, call it PAY-3301.",
+      "expected_output": "A self-contained SVG blueprint sheet with ~9 components as varied isometric solids, routed conduits with payload labels, legend, component schedule, notes panel and a filled-in title block naming PAY-3301 and a restricted classification.",
+      "files": [],
+      "assertions": [
+        "Output includes a self-contained SVG sheet (no external file or font references)",
+        "SVG uses true 30-degree isometric projection with 3D volumes, not a flat 2D box diagram",
+        "At least four visually distinct component form types appear (not one shape repeated)",
+        "Exactly one emissive/glowing core element, or none -- never two competing centres",
+        "Dependency paths are orthogonally routed and visually distinguished by class (at least 3 line styles)",
+        "Every dependency path that carries a payload has a legible payload label",
+        "Sheet carries a complete filled-in title block (drawing no., revision, scale, date, author)",
+        "Sheet carries a legend keyed to the forms and path classes actually used",
+        "Sheet carries a component schedule keyed by reference letter to callouts on the drawing",
+        "No annotation text overlaps other annotation text illegibly",
+        "No panel text runs through or outside its frame",
+        "Notes panel states at least one load-bearing constraint rather than restating the diagram",
+        "Aesthetic reads as an aged reprographic engineering drawing (paper grain, ink bleed, fold/foxing), not a modern CAD plot",
+        "Requested skin/colourway honoured (blue diazo / aged sepia / dark retro-futurist as asked)"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "brewery-plant-nonsoftware",
+      "prompt": "we're putting together a heritage display for the brewery's 150th and I want a big framed drawing of the plant that looks like it came out of the 1950s engineering office. aged paper look not blue. the process, roughly in order: grain silo feeds the mill, mill to the mash tun, mash tun to the lauter tun, wort goes to the kettle (steam from the boiler house), then whirlpool, then through the heat exchanger into six fermentation vessels, then two conditioning tanks, then the bottling hall. cooling comes off a glycol plant that serves the fermenters and the conditioning tanks. control room oversees the whole thing but can't override the boiler interlocks. needs to be printable at A1.",
+      "expected_output": "An aged-paper (sepia) SVG sheet of a physical process plant using non-software forms, plus an A1 PDF, with the boiler interlock constraint captured as a numbered note.",
+      "files": [],
+      "assertions": [
+        "Output includes a self-contained SVG sheet (no external file or font references)",
+        "SVG uses true 30-degree isometric projection with 3D volumes, not a flat 2D box diagram",
+        "At least four visually distinct component form types appear (not one shape repeated)",
+        "Exactly one emissive/glowing core element, or none -- never two competing centres",
+        "Dependency paths are orthogonally routed and visually distinguished by class (at least 3 line styles)",
+        "Every dependency path that carries a payload has a legible payload label",
+        "Sheet carries a complete filled-in title block (drawing no., revision, scale, date, author)",
+        "Sheet carries a legend keyed to the forms and path classes actually used",
+        "Sheet carries a component schedule keyed by reference letter to callouts on the drawing",
+        "No annotation text overlaps other annotation text illegibly",
+        "No panel text runs through or outside its frame",
+        "Notes panel states at least one load-bearing constraint rather than restating the diagram",
+        "Aesthetic reads as an aged reprographic engineering drawing (paper grain, ink bleed, fold/foxing), not a modern CAD plot",
+        "Requested skin/colourway honoured (blue diazo / aged sepia / dark retro-futurist as asked)"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "fictional-reactor-hero-image",
+      "prompt": "Making a hero image for the cover of an internal design doc about our new compute platform. I want it to look like a retro-futurist arc-reactor schematic \u2014 dark, glowing centre, amber and blue trace, like an inherited technical document for a device that shouldn't exist yet. It's a fusion-ish power plant: a containment core at the middle, four magnetic confinement rings feeding it, a cryogenic plant, a capacitor bank, two coolant loops, a plasma injector, and an isolated control bunker connected only by a hardened link. Make up plausible ratings, I want it to read as credible engineering not sci-fi wallpaper.",
+      "expected_output": "A stark-skin SVG sheet with exactly one glowing core node, varied forms, invented but plausible spec ratings in the component schedule, and a title block that reads as a real issued document.",
+      "files": [],
+      "assertions": [
+        "Output includes a self-contained SVG sheet (no external file or font references)",
+        "SVG uses true 30-degree isometric projection with 3D volumes, not a flat 2D box diagram",
+        "At least four visually distinct component form types appear (not one shape repeated)",
+        "Exactly one emissive/glowing core element, or none -- never two competing centres",
+        "Dependency paths are orthogonally routed and visually distinguished by class (at least 3 line styles)",
+        "Every dependency path that carries a payload has a legible payload label",
+        "Sheet carries a complete filled-in title block (drawing no., revision, scale, date, author)",
+        "Sheet carries a legend keyed to the forms and path classes actually used",
+        "Sheet carries a component schedule keyed by reference letter to callouts on the drawing",
+        "No annotation text overlaps other annotation text illegibly",
+        "No panel text runs through or outside its frame",
+        "Notes panel states at least one load-bearing constraint rather than restating the diagram",
+        "Aesthetic reads as an aged reprographic engineering drawing (paper grain, ink bleed, fold/foxing), not a modern CAD plot",
+        "Requested skin/colourway honoured (blue diazo / aged sepia / dark retro-futurist as asked)"
+      ]
+    }
+  ]
+}

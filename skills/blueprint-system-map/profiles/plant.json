@@ -1,0 +1,89 @@
+{
+  "id": "plant",
+  "version": "PL-1.0",
+  "label": "Process and physical plant profile",
+  "kinds": {
+    "vessel": {
+      "form": "drum",
+      "note": "Tank, reactor or vessel"
+    },
+    "hopper": {
+      "form": "silo",
+      "note": "Silo, hopper or bunker"
+    },
+    "hall": {
+      "form": "vault",
+      "note": "Hall, shed or bulk store"
+    },
+    "stage": {
+      "form": "stack",
+      "note": "Multi-stage or tiered unit"
+    },
+    "plant-item": {
+      "form": "slab",
+      "note": "Machine or process unit",
+      "band_forms": { "3": "tower" }
+    },
+    "bed": {
+      "form": "plinth",
+      "note": "Basin, bed or lagoon"
+    },
+    "collector": {
+      "form": "pyramid",
+      "note": "Collector, clarifier or funnel"
+    },
+    "structure": {
+      "form": "lattice",
+      "note": "Frame, gantry or intake screen"
+    },
+    "offsite": {
+      "form": "dish",
+      "note": "Offsite supply or discharge"
+    },
+    "primary-unit": {
+      "form": "core",
+      "note": "Primary energy or reaction unit"
+    }
+  },
+  "aliases": {
+    "tank": "vessel",
+    "reactor": "vessel",
+    "fermenter": "vessel",
+    "kettle": "vessel",
+    "reservoir": "vessel",
+    "drum": "vessel",
+    "silo": "hopper",
+    "bunker": "hopper",
+    "bin": "hopper",
+    "shed": "hall",
+    "warehouse": "hall",
+    "bottling-hall": "hall",
+    "store": "hall",
+    "column": "stage",
+    "filter": "stage",
+    "mill": "plant-item",
+    "pump": "plant-item",
+    "compressor": "plant-item",
+    "exchanger": "plant-item",
+    "heat-exchanger": "plant-item",
+    "boiler": "plant-item",
+    "control-room": "plant-item",
+    "machine": "plant-item",
+    "basin": "bed",
+    "lagoon": "bed",
+    "settling-basin": "bed",
+    "clarifier": "collector",
+    "collector": "collector",
+    "gantry": "structure",
+    "intake": "structure",
+    "frame": "structure",
+    "scaffold": "structure",
+    "utility": "offsite",
+    "grid": "offsite",
+    "supply": "offsite",
+    "discharge": "offsite",
+    "outfall": "offsite",
+    "furnace": "primary-unit",
+    "core": "primary-unit"
+  }
+}

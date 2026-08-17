@@ -1,0 +1,22 @@
+{
+  "name": "isometric-blueprint",
+  "version": "0.2.0",
+  "description": "Draw any system \u2014 software architecture, infrastructure, process or physical plant \u2014 as an isometric general-arrangement drawing on a vintage industrial engineering blueprint sheet. Outputs one self-contained SVG, with a print-size PDF on request.",
+  "author": {
+    "name": "Michael L. Kerr",
+    "email": "mkerr09@gmail.com"
+  },
+  "license": "MIT",
+  "keywords": [
+    "architecture-diagram",
+    "blueprint",
+    "diagram",
+    "drawing-standard",
+    "isometric",
+    "svg",
+    "symbol-library",
+    "system-map",
+    "technical-drawing",
+    "visualization"
+  ]
+}

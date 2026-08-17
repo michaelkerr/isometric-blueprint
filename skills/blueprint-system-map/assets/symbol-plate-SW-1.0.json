@@ -1,0 +1,62 @@
+{
+  "title": "Symbol Library — Software Profile",
+  "subtitle": "Controlled shape vocabulary, profile SW-1.0",
+  "organisation": "Acme Engineering",
+  "classification": "Drawing standard — proposed",
+  "drawing_no": "SYM-001",
+  "revision": "A",
+  "sheet": "1 / 1",
+  "scale": "Symbols not to scale",
+  "drawn_by": "M. L. Kerr",
+  "checked_by": "For review",
+  "date": "2026-08-17",
+  "skin": "cyanotype",
+  "sheet_heading": "Controlled symbol vocabulary",
+  "sheet_subheading": "Shape denotes kind — dimension denotes magnitude — profile SW-1.0",
+  "dim_x": "SHAPE = KIND",
+  "dim_y": "GROUPED BY CATEGORY",
+  "nodes": [
+    {"id":"a","label":"Datastore","form":"drum","tier":"state","footprint":[2,2],"height":2.2,
+     "spec":["Round = contained volume","Authoritative record"]},
+    {"id":"b","label":"Queue / Stream","form":"silo","tier":"state","footprint":[2,2],"height":2.6,
+     "spec":["Fills and drains","Transient by design"]},
+    {"id":"c","label":"Bulk Store","form":"vault","tier":"state","footprint":[3,2],"height":2.0,
+     "spec":["Archive, warehouse","Derived, never authoritative"]},
+    {"id":"d","label":"Sharded Store","form":"stack","tier":"state","footprint":[2,2],"height":2.4,
+     "spec":["Tiered or partitioned","Shard key in schedule"]},
+
+    {"id":"e","label":"Service","form":"slab","tier":"compute","footprint":[2,2],"height":2.0,
+     "spec":["Boxy = compute","Height = criticality"]},
+    {"id":"f","label":"Service (critical)","form":"tower","tier":"compute","footprint":[2,2],"height":3.2,
+     "spec":["Same kind as slab","Band 3 silhouette"]},
+    {"id":"g","label":"Fleet / Pool","form":"plinth","tier":"compute","footprint":[3,2],"height":0.9,
+     "spec":["Wide and shallow","Count in schedule"]},
+    {"id":"h","label":"Aggregator","form":"pyramid","tier":"compute","footprint":[2,2],"height":2.2,
+     "spec":["Many in, few out","Reducer or gate"]},
+
+    {"id":"j","label":"Fabric","form":"lattice","tier":"boundary","footprint":[2,2],"height":2.4,
+     "spec":["Open = structure only","Balancer, mesh, edge"]},
+    {"id":"k","label":"External Party","form":"dish","tier":"boundary","footprint":[2,2],"height":2.8,
+     "spec":["Reaches outside","Outside trust boundary"]},
+
+    {"id":"l","label":"Authority Core","form":"core","tier":"authority","footprint":[3,3],"height":2.6,
+     "accent":true,
+     "spec":["One per sheet, maximum","Sole owner of state"]}
+  ],
+  "edges": [],
+  "revisions": [
+    {"rev":"A","date":"2026-08-17","description":"Proposed for standardisation","by":"MLK"}
+  ],
+  "explainer": {
+    "heading": "Rules of the vocabulary",
+    "paragraphs": [
+      "Three encoding channels carry three independent facts. Shape carries kind. Height carries criticality. Footprint area carries scale or fan-out. A channel must carry one fact only. If height denotes kind, then height can no longer denote importance, and the drawing loses its strongest hierarchy signal."
+    ],
+    "notes": [
+      "Shape is fixed by kind and must not be varied for emphasis. To distinguish two components of the same kind, vary height and footprint, never shape.",
+      "Height bands: 0.8 to 1.4 peripheral, 1.8 to 2.4 working, 2.8 to 3.5 load-bearing. A kind may render a different silhouette per band, as service does at band 3, but the kind does not change.",
+      "Hatch, accent and glow are reserved. Hatch denotes ownership. Accent denotes the critical path. Glow denotes the single authority. Do not spend these channels on decoration.",
+      "Every sheet must cite the profile and version in the title block. A drawing that does not cite its profile is not drawn to a standard."
+    ]
+  }
+}
