@@ -104,9 +104,12 @@ python3 <skill_dir>/scripts/render_blueprint.py spec.json -o sheet.svg
 Options: `--skin diazo|sepia|cyanotype|stark` and
 `--profile software|plant|off` override the spec; `--enforce
 record|warn|strict|off` sets how departures are handled; `--pdf sheet.pdf` also
-writes a print-ready sheet. Only produce the PDF if the
-user asks for print, a poster, or a PDF — it needs `cairosvg`, `rsvg-convert` or
-`inkscape`, and quietly failing to make one is worse than not offering.
+writes a print-ready sheet; `--html interactive.html` writes a self-contained
+interactive page with a Component Inspector side panel — clicking any building or
+conduit shows its classification, specification and connections. Only produce the
+PDF if the user asks for print, a poster, or a PDF — it needs `cairosvg`,
+`rsvg-convert` or `inkscape`, and quietly failing to make one is worse than not
+offering.
 
 ### 4. Look at it before you hand it over
 

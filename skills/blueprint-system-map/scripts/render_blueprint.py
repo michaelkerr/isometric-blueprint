@@ -484,6 +484,7 @@ def build_conduits(spec, nodes, P, cols, rows, S):
         a, b = by_id.get(e.get("from")), by_id.get(e.get("to"))
         if not a or not b:
             continue
+        from_id, to_id = a["id"], b["id"]
         kind = (e.get("kind") or "data").lower()
         st = EDGE_STYLES.get(kind, EDGE_STYLES["data"])
         accent = bool(e.get("accent"))
@@ -521,7 +522,9 @@ def build_conduits(spec, nodes, P, cols, rows, S):
                     seg.append('<line x1="%.2f" y1="%.2f" x2="%.2f" y2="%.2f" '
                                'stroke="%s" stroke-width="1.2"/>'
                                % (px, py - 4, px, py + 4, col))
-            drawables.append((mx + my, "".join(seg)))
+            drawables.append((mx + my,
+                              '<g class="bp-edge" data-from="%s" data-to="%s">%s</g>'
+                              % (esc(from_id), esc(to_id), "".join(seg))))
 
         # riser + port at each end, but only where the wall actually faces us
         for (side, anchor, node) in ((sa_side, sa, a), (ta_side, ta, b)):
@@ -535,11 +538,14 @@ def build_conduits(spec, nodes, P, cols, rows, S):
                 riser += ('<rect x="%.2f" y="%.2f" width="7" height="7" fill="%s" '
                           'stroke="%s" stroke-width="1"/>'
                           % (pp[0] - 3.5, pp[1] - 3.5, S["paper"], col))
-                drawables.append((anchor[0] + anchor[1] + 0.01, riser))
+                drawables.append((anchor[0] + anchor[1] + 0.01,
+                                  '<g class="bp-edge" data-from="%s" data-to="%s">%s</g>'
+                                  % (esc(from_id), esc(to_id), riser)))
             else:
                 drawables.append((anchor[0] + anchor[1] + 0.01,
-                                  '<circle cx="%.2f" cy="%.2f" r="2.6" fill="%s"/>'
-                                  % (gp[0], gp[1], col)))
+                                  '<g class="bp-edge" data-from="%s" data-to="%s">'
+                                  '<circle cx="%.2f" cy="%.2f" r="2.6" fill="%s"/></g>'
+                                  % (esc(from_id), esc(to_id), gp[0], gp[1], col)))
 
         # arrowhead at the target entry, pointing along the last leg
         if len(path) >= 2:
@@ -550,17 +556,19 @@ def build_conduits(spec, nodes, P, cols, rows, S):
             back = 11.0
             hx, hy = sq[0] - ux / L * back, sq[1] - uy / L * back
             drawables.append((q[0] + q[1] + 0.02,
+                              '<g class="bp-edge" data-from="%s" data-to="%s">'
                               '<line x1="%.2f" y1="%.2f" x2="%.2f" y2="%.2f" '
                               'stroke="%s" stroke-width="%.2f" '
-                              'marker-end="url(#ar-%s)"/>'
-                              % (hx, hy, sq[0], sq[1], col, wgt, ckey)))
+                              'marker-end="url(#ar-%s)"/></g>'
+                              % (esc(from_id), esc(to_id),
+                                 hx, hy, sq[0], sq[1], col, wgt, ckey)))
 
         if e.get("payload"):
             best = max(zip(path, path[1:]),
                        key=lambda pr: abs(pr[0][0] - pr[1][0]) + abs(pr[0][1] - pr[1][1]))
             mp = ((best[0][0] + best[1][0]) / 2.0, (best[0][1] + best[1][1]) / 2.0)
             sx, sy = P.pt(mp[0], mp[1], 0)
-            labels.append((sx, sy, str(e["payload"]), col))
+            labels.append((sx, sy, str(e["payload"]), col, from_id, to_id))
     return drawables, labels
 
 
@@ -639,7 +647,10 @@ def seed_obstacles(P, nodes, region):
 
 def emit_payload_labels(labels, S, obs):
     o = []
-    for (x, y, s, col) in labels:
+    for entry in labels:
+        x, y, s, col = entry[0], entry[1], entry[2], entry[3]
+        edge_from = entry[4] if len(entry) > 4 else None
+        edge_to = entry[5] if len(entry) > 5 else None
         w = len(s) * 5.6 + 12
         # Generous candidate set. A payload tag can sit anywhere near its
         # conduit as long as a leader connects the two, so trying many positions
@@ -652,6 +663,9 @@ def emit_payload_labels(labels, S, obs):
                                          cx + w / 2.0 + 3, cy + 5)))
         (cx, cy), _r = obs.place(cands)
         col = col if col != S["ink_faint"] else S["ink_soft"]
+        if edge_from and edge_to:
+            o.append('<g class="bp-edge" data-from="%s" data-to="%s">'
+                     % (esc(edge_from), esc(edge_to)))
         if (cx, cy) != (x, y - 14):
             o.append('<line x1="%.2f" y1="%.2f" x2="%.2f" y2="%.2f" stroke="%s" '
                      'stroke-width="0.7" opacity="0.7" stroke-dasharray="2 2"/>'
@@ -661,6 +675,8 @@ def emit_payload_labels(labels, S, obs):
                  'fill="%s" stroke="%s" stroke-width="0.6" opacity="0.96"/>'
                  % (cx - w / 2.0, cy - 10.5, w, S["paper"], S["ink_faint"]))
         o.append(txt(cx, cy, s, 9, col, MONO, "middle"))
+        if edge_from and edge_to:
+            o.append('</g>')
     return "".join(o)
 
 
@@ -697,6 +713,7 @@ def emit_callouts(P, nodes, S, mid_x, obs):
         (bx, by, right), _r = obs.place(cands)
 
         col = S["accent"] if n["accent"] else S["ink"]
+        o.append('<g class="bp-callout" data-id="%s">' % esc(n["id"]))
         # Land the leader on the rim of the bubble facing the apex, so it reads as
         # a leader rather than a line that stops short of or stabs through it.
         vx, vy = apex[0] - bx, apex[1] - by
@@ -712,6 +729,7 @@ def emit_callouts(P, nodes, S, mid_x, obs):
         o.append(txt(lx, by - 1, label, 11.5, S["ink"], SANS, anchor, "bold", 0.6))
         if sub:
             o.append(txt(lx, by + 11, sub, 8.8, S["ink_soft"], MONO, anchor))
+        o.append('</g>')
     return "".join(o)
 
 
@@ -1155,10 +1173,13 @@ def render(spec):
     items = list(conduits)
     for n in nodes:
         near = (n["x"] + n["w"]) + (n["y"] + n["d"])
-        items.append((near - 0.001, shadow(P, n, S)))
-        items.append((near, emit_prims(
+        node_svg = '<g class="bp-node" data-id="%s">' % esc(n["id"])
+        node_svg += shadow(P, n, S)
+        node_svg += emit_prims(
             G.build(n["form"], P, n["x"], n["y"], n["w"], n["d"], n["h"]),
-            S, n["accent"])))
+            S, n["accent"])
+        node_svg += '</g>'
+        items.append((near, node_svg))
     items.sort(key=lambda t: t[0])
 
     obs = seed_obstacles(P, nodes, draw_region)
@@ -1219,20 +1240,451 @@ def render(spec):
                % (SHEET_W, SHEET_H, SHEET_W, SHEET_H))
     out.append('<title>%s</title>' % esc(spec.get("title") or "System arrangement"))
     out.append(build_defs(S))
-    out.append('<rect x="0" y="0" width="%.0f" height="%.0f" fill="%s"/>'
-               % (SHEET_W, SHEET_H, S["paper"]))
+    out.append('<rect x="0" y="0" width="%.0f" height="%.0f" fill="%s"'
+               ' pointer-events="none"/>' % (SHEET_W, SHEET_H, S["paper"]))
     out.append('<g id="ink" stroke-linejoin="round">%s%s</g>'
                % (model_svg, "".join(panels)))
     if S["bleed"] > 0:
         # a blurred copy of the linework under the crisp copy: ink soaking into
         # paper. Cheap, and it is most of what separates a print from a plot.
-        out.append('<use xlink:href="#ink" filter="url(#bleed)" opacity="%.2f"/>'
-                   % (S["bleed"] * 0.42))
-        out.append('<use xlink:href="#ink"/>')
-    out.append(draw_frame(S, spec))
-    out.append(draw_aging(S, seed))
+        out.append('<use xlink:href="#ink" filter="url(#bleed)" opacity="%.2f"'
+                   ' pointer-events="none"/>' % (S["bleed"] * 0.42))
+        out.append('<use xlink:href="#ink" pointer-events="none"/>')
+    out.append('<g pointer-events="none">%s</g>' % draw_frame(S, spec))
+    out.append('<g pointer-events="none">%s</g>' % draw_aging(S, seed))
     out.append('</svg>')
     return "".join(out)
+
+
+def build_manifest(spec):
+    nodes, prof, _ = normalise(spec)
+    by_id = {n["id"]: n for n in nodes}
+    edges = spec.get("edges") or []
+    explainer = spec.get("explainer") or {}
+    mn = []
+    for n in nodes:
+        incoming = [e for e in edges if e.get("to") == n["id"] and e.get("from") in by_id]
+        outgoing = [e for e in edges if e.get("from") == n["id"] and e.get("to") in by_id]
+        mn.append({
+            "id": n["id"], "ref": n["ref"], "label": n["label"],
+            "kind": n.get("kind") or n["form"], "form": n["form"],
+            "tier": n["tier"], "spec": n["spec"],
+            "criticality": n.get("criticality"),
+            "scale": n.get("scale", 2),
+            "height": round(n["h"], 2),
+            "footprint": [n["w"], n["d"]],
+            "accent": n["accent"],
+            "incoming": [{"from": e["from"],
+                          "from_ref": by_id[e["from"]]["ref"],
+                          "from_label": by_id[e["from"]]["label"],
+                          "kind": e.get("kind", "data"),
+                          "payload": e.get("payload", "")}
+                         for e in incoming],
+            "outgoing": [{"to": e["to"],
+                          "to_ref": by_id[e["to"]]["ref"],
+                          "to_label": by_id[e["to"]]["label"],
+                          "kind": e.get("kind", "data"),
+                          "payload": e.get("payload", "")}
+                         for e in outgoing],
+        })
+    me = []
+    for e in edges:
+        if e.get("from") in by_id and e.get("to") in by_id:
+            me.append({
+                "from": e["from"], "to": e["to"],
+                "from_ref": by_id[e["from"]]["ref"],
+                "to_ref": by_id[e["to"]]["ref"],
+                "from_label": by_id[e["from"]]["label"],
+                "to_label": by_id[e["to"]]["label"],
+                "kind": e.get("kind", "data"),
+                "payload": e.get("payload", ""),
+                "accent": bool(e.get("accent")),
+            })
+    return {
+        "title": spec.get("title", "System Arrangement"),
+        "skin": spec.get("skin", "diazo"),
+        "nodes": mn, "edges": me,
+        "explainer": explainer,
+    }
+
+
+EDGE_KIND_LABELS = {
+    "data": "Data path",
+    "control": "Control path",
+    "event": "Event path",
+    "bulk": "Bulk transfer",
+    "telemetry": "Telemetry",
+    "secure": "Protected channel",
+}
+
+
+def render_html(svg_string, manifest):
+    import re as _re
+    S = SK.get(manifest["skin"])
+    svg_body = svg_string
+    if svg_body.startswith("<?xml"):
+        svg_body = svg_body[svg_body.index("?>") + 2:].lstrip()
+    svg_body = _re.sub(r'(<svg\b[^>]*?)\s+width="[^"]*"', r'\1', svg_body)
+    svg_body = _re.sub(r'(<svg\b[^>]*?)\s+height="[^"]*"', r'\1', svg_body)
+    manifest_json = json.dumps(manifest, indent=None, ensure_ascii=True)
+    skin_json = json.dumps(S, indent=None, ensure_ascii=True)
+    title = esc(manifest.get("title", "System Arrangement"))
+
+    return """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>%(title)s</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --paper:%(paper)s; --paper-edge:%(paper_edge)s;
+  --ink:%(ink)s; --ink-soft:%(ink_soft)s; --ink-faint:%(ink_faint)s;
+  --accent:%(accent)s; --accent2:%(accent2)s;
+  --face-top:%(face_top)s; --face-right:%(face_right)s; --face-left:%(face_left)s;
+}
+html,body{height:100%%;overflow:hidden;font-family:'Courier New',Courier,monospace}
+body{display:flex;background:var(--paper-edge);color:var(--ink)}
+.bp-container{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;
+  position:relative;min-width:0;height:100vh}
+.bp-container svg{width:100%%;height:100%%;display:block}
+.bp-node,.bp-callout{cursor:pointer}
+.bp-edge{cursor:pointer}
+.bp-node:hover,.bp-callout:hover{filter:brightness(1.15)}
+.bp-edge:hover{filter:brightness(1.2)}
+.bp-node.selected,.bp-callout.selected{filter:drop-shadow(0 0 8px var(--accent))}
+.bp-edge.selected{filter:drop-shadow(0 0 6px var(--accent))}
+.detail-panel{
+  width:380px;min-width:380px;max-width:380px;
+  background:var(--paper);border-left:2px solid var(--ink);
+  overflow-y:auto;display:flex;flex-direction:column;
+  transition:width 0.2s;
+}
+.panel-header{
+  background:var(--face-top);border-bottom:2px solid var(--ink);
+  padding:12px 16px;font-size:13px;font-weight:bold;letter-spacing:2px;
+  color:var(--ink);display:flex;align-items:center;justify-content:space-between;
+}
+.panel-empty{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:40px 24px;text-align:center;opacity:0.7;
+}
+.panel-empty h3{font-size:13px;letter-spacing:2px;margin-bottom:16px;color:var(--ink-soft)}
+.panel-empty p{font-size:10px;color:var(--ink-faint);line-height:1.6;max-width:260px}
+.panel-content{display:none;flex:1;overflow-y:auto;padding:0}
+.detail-ref{
+  display:flex;align-items:center;gap:14px;
+  padding:18px 16px 14px;border-bottom:1px solid var(--ink-faint);
+}
+.ref-badge{
+  width:36px;height:36px;border-radius:50%%;border:2px solid var(--ink);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:bold;flex-shrink:0;
+}
+.ref-badge.accent{border-color:var(--accent);color:var(--accent)}
+.ref-label{font-size:14px;font-weight:bold;letter-spacing:0.8px;text-transform:uppercase}
+.ref-sub{font-size:9px;color:var(--ink-soft);margin-top:3px}
+.detail-section{padding:14px 16px;border-bottom:1px solid var(--ink-faint)}
+.detail-section:last-child{border-bottom:none}
+.section-title{
+  font-size:9px;font-weight:bold;letter-spacing:1.5px;
+  color:var(--ink-soft);margin-bottom:10px;
+}
+.field-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:10px}
+.field-key{color:var(--ink-soft)}
+.field-val{color:var(--ink);font-weight:bold;text-align:right}
+.spec-line{font-size:10px;color:var(--ink);margin-bottom:5px;padding-left:18px;
+  position:relative}
+.spec-line::before{content:attr(data-num) ".";position:absolute;left:0;
+  color:var(--accent);font-weight:bold}
+.conn-item{margin-bottom:10px}
+.conn-header{font-size:10px;display:flex;align-items:center;gap:6px}
+.conn-arrow{color:var(--accent);font-weight:bold;font-size:12px}
+.conn-ref{font-weight:bold;min-width:16px}
+.conn-label{color:var(--ink)}
+.conn-detail{font-size:9px;color:var(--ink-soft);padding-left:22px;margin-top:2px}
+.conn-kind{
+  display:inline-block;padding:1px 5px;font-size:8px;letter-spacing:0.5px;
+  border:1px solid var(--ink-faint);border-radius:2px;margin-right:4px;
+  color:var(--ink-soft);
+}
+.edge-detail-header{
+  padding:18px 16px 14px;border-bottom:1px solid var(--ink-faint);
+}
+.edge-endpoints{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.edge-ep{text-align:center}
+.edge-ep .ref-badge{width:30px;height:30px;font-size:13px;margin:0 auto 4px}
+.edge-ep-label{font-size:9px;color:var(--ink-soft);max-width:100px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.edge-arrow-line{flex:1;height:2px;background:var(--ink-soft);position:relative;
+  min-width:30px}
+.edge-arrow-line::after{content:"";position:absolute;right:-1px;top:-4px;
+  border:5px solid transparent;border-left:7px solid var(--ink-soft)}
+.edge-payload-tag{
+  text-align:center;margin-top:8px;font-size:11px;font-weight:bold;
+  color:var(--ink);letter-spacing:0.5px;
+}
+@media(max-width:900px){
+  .detail-panel{position:absolute;right:0;top:0;bottom:0;z-index:10;
+    box-shadow:-4px 0 20px rgba(0,0,0,0.3)}
+  .detail-panel.collapsed{width:0;min-width:0;border:none;overflow:hidden}
+}
+</style>
+</head>
+<body>
+<div class="bp-container" id="bp-container">
+%(svg)s
+</div>
+<div class="detail-panel" id="detail-panel">
+  <div class="panel-header">
+    <span>COMPONENT INSPECTOR</span>
+    <span id="panel-close" style="cursor:pointer;font-size:16px;opacity:0.6"
+      title="Clear selection">&times;</span>
+  </div>
+  <div class="panel-empty" id="panel-empty">
+    <h3>SELECT A COMPONENT</h3>
+    <p>Click any building or conduit on the drawing to inspect its specification,
+    classification and connections.</p>
+  </div>
+  <div class="panel-content" id="panel-content"></div>
+</div>
+<script>
+(function(){
+var M = %(manifest)s;
+var S = %(skin)s;
+var byId = {};
+M.nodes.forEach(function(n){ byId[n.id] = n; });
+
+var EKIND = %(edge_kinds)s;
+
+function clearSel(){
+  document.querySelectorAll('.selected').forEach(function(el){
+    el.classList.remove('selected');
+  });
+}
+
+function selectNode(id){
+  clearSel();
+  document.querySelectorAll('.bp-node[data-id="'+id+'"]').forEach(function(el){
+    el.classList.add('selected');
+  });
+  document.querySelectorAll('.bp-callout[data-id="'+id+'"]').forEach(function(el){
+    el.classList.add('selected');
+  });
+  showNodeDetail(byId[id]);
+}
+
+function selectEdge(from, to){
+  clearSel();
+  document.querySelectorAll('.bp-edge[data-from="'+from+'"][data-to="'+to+'"]')
+    .forEach(function(el){ el.classList.add('selected'); });
+  var edge = M.edges.find(function(e){ return e.from===from && e.to===to; });
+  if(edge) showEdgeDetail(edge);
+}
+
+function showNodeDetail(n){
+  var pc = document.getElementById('panel-content');
+  var pe = document.getElementById('panel-empty');
+  pe.style.display = 'none';
+  pc.style.display = 'block';
+  var h = '';
+  h += '<div class="detail-ref">';
+  h += '<div class="ref-badge'+(n.accent?' accent':'')+'">'+esc(n.ref)+'</div>';
+  h += '<div><div class="ref-label">'+esc(n.label)+'</div>';
+  h += '<div class="ref-sub">'+esc(n.form.toUpperCase())+' \\u00b7 '+esc(n.tier.toUpperCase())+'</div>';
+  h += '</div></div>';
+  h += '<div class="detail-section"><div class="section-title">CLASSIFICATION</div>';
+  h += field('Kind', n.kind);
+  h += field('Form', n.form);
+  h += field('Tier', n.tier);
+  h += field('Height', n.height+' units');
+  h += field('Footprint', n.footprint[0]+' \\u00d7 '+n.footprint[1]);
+  if(n.criticality) h += field('Criticality', n.criticality+' / 3');
+  h += field('Scale', (n.scale||2)+' / 3');
+  if(n.accent) h += field('Accent', 'Critical path');
+  h += '</div>';
+  if(n.spec && n.spec.length){
+    h += '<div class="detail-section"><div class="section-title">SPECIFICATION</div>';
+    n.spec.forEach(function(s,i){
+      h += '<div class="spec-line" data-num="'+(i+1)+'">'+esc(s)+'</div>';
+    });
+    h += '</div>';
+  }
+  var conns = n.outgoing.concat(n.incoming.map(function(c){
+    return {dir:'in', from:c.from, from_ref:c.from_ref, from_label:c.from_label,
+            kind:c.kind, payload:c.payload};
+  }));
+  if(n.outgoing.length || n.incoming.length){
+    h += '<div class="detail-section"><div class="section-title">CONNECTIONS</div>';
+    n.outgoing.forEach(function(c){
+      h += connRow('\\u25b6', c.to_ref || '?', c.to_label || c.to, c.kind, c.payload,
+                    n.id, c.to);
+    });
+    n.incoming.forEach(function(c){
+      h += connRow('\\u25c0', c.from_ref || '?', c.from_label || c.from, c.kind, c.payload,
+                    c.from, n.id);
+    });
+    h += '</div>';
+  }
+  pc.innerHTML = h;
+  pc.querySelectorAll('.conn-item[data-from][data-to]').forEach(function(el){
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', function(ev){
+      ev.stopPropagation();
+      selectEdge(el.getAttribute('data-from'), el.getAttribute('data-to'));
+    });
+  });
+}
+
+function showEdgeDetail(e){
+  var pc = document.getElementById('panel-content');
+  var pe = document.getElementById('panel-empty');
+  pe.style.display = 'none';
+  pc.style.display = 'block';
+  var h = '<div class="edge-detail-header">';
+  h += '<div class="edge-endpoints">';
+  h += '<div class="edge-ep"><div class="ref-badge">'+esc(e.from_ref)+'</div>';
+  h += '<div class="edge-ep-label">'+esc(e.from_label)+'</div></div>';
+  h += '<div class="edge-arrow-line"></div>';
+  h += '<div class="edge-ep"><div class="ref-badge">'+esc(e.to_ref)+'</div>';
+  h += '<div class="edge-ep-label">'+esc(e.to_label)+'</div></div>';
+  h += '</div>';
+  if(e.payload) h += '<div class="edge-payload-tag">'+esc(e.payload)+'</div>';
+  h += '</div>';
+  h += '<div class="detail-section"><div class="section-title">PATH CLASSIFICATION</div>';
+  h += field('Kind', e.kind);
+  h += field('Description', EKIND[e.kind] || e.kind);
+  if(e.payload) h += field('Payload', e.payload);
+  if(e.accent) h += field('Critical path', 'Yes');
+  h += '</div>';
+  // source node summary
+  var src = byId[e.from], tgt = byId[e.to];
+  if(src){
+    h += '<div class="detail-section"><div class="section-title">SOURCE ('+esc(src.ref)+')</div>';
+    h += '<div class="node-link" data-goto="'+esc(src.id)+'" style="font-size:11px;font-weight:bold;margin-bottom:6px;cursor:pointer">'+esc(src.label)+'</div>';
+    h += field('Kind', src.kind); h += field('Tier', src.tier);
+    h += '</div>';
+  }
+  if(tgt){
+    h += '<div class="detail-section"><div class="section-title">TARGET ('+esc(tgt.ref)+')</div>';
+    h += '<div class="node-link" data-goto="'+esc(tgt.id)+'" style="font-size:11px;font-weight:bold;margin-bottom:6px;cursor:pointer">'+esc(tgt.label)+'</div>';
+    h += field('Kind', tgt.kind); h += field('Tier', tgt.tier);
+    h += '</div>';
+  }
+  pc.innerHTML = h;
+  pc.querySelectorAll('.node-link[data-goto]').forEach(function(el){
+    el.addEventListener('click', function(ev){
+      ev.stopPropagation();
+      selectNode(el.getAttribute('data-goto'));
+    });
+  });
+}
+
+function field(k, v){
+  return '<div class="field-row"><span class="field-key">'+esc(k)
+    +'</span><span class="field-val">'+esc(String(v))+'</span></div>';
+}
+function connRow(arrow, ref, label, kind, payload, fromId, toId){
+  var h = '<div class="conn-item" data-from="'+esc(fromId)+'" data-to="'+esc(toId)+'">';
+  h += '<div class="conn-header"><span class="conn-arrow">'+arrow+'</span>';
+  h += '<span class="conn-ref">'+esc(ref)+'</span>';
+  h += '<span class="conn-label">'+esc(label)+'</span></div>';
+  h += '<div class="conn-detail"><span class="conn-kind">'+esc(kind.toUpperCase())+'</span>';
+  if(payload) h += esc(payload);
+  h += '</div></div>';
+  return h;
+}
+function esc(s){
+  var d = document.createElement('span');
+  d.textContent = s; return d.innerHTML;
+}
+
+// event delegation — handles both original SVG groups and hit-overlay elements
+document.addEventListener('click', function(ev){
+  var t = ev.target;
+  var node = t.closest('.bp-node, .bp-callout, .bp-hit-node');
+  if(node){
+    var id = node.getAttribute('data-id');
+    if(id && byId[id]){ selectNode(id); return; }
+  }
+  var edge = t.closest('.bp-edge');
+  if(!edge && (t.classList.contains('bp-hit-edge') || t.closest('.bp-hit-edge'))) edge = t.classList.contains('bp-hit-edge') ? t : t.closest('.bp-hit-edge');
+  if(edge){
+    var f = edge.getAttribute('data-from'), t2 = edge.getAttribute('data-to');
+    if(f && t2){ selectEdge(f, t2); return; }
+  }
+  if(!ev.target.closest('.detail-panel')){
+    clearSel();
+    document.getElementById('panel-empty').style.display = '';
+    document.getElementById('panel-content').style.display = 'none';
+  }
+});
+document.getElementById('panel-close').addEventListener('click', function(){
+  clearSel();
+  document.getElementById('panel-empty').style.display = '';
+  document.getElementById('panel-content').style.display = 'none';
+});
+// build a transparent hit-target overlay on top of all SVG layers
+(function(){
+  var svg = document.querySelector('.bp-container svg');
+  if(!svg) return;
+  var ns = 'http://www.w3.org/2000/svg';
+  var overlay = document.createElementNS(ns, 'g');
+  overlay.setAttribute('id', 'bp-hit-overlay');
+  // edge hit areas first (underneath) — wider invisible strokes
+  document.querySelectorAll('.bp-edge').forEach(function(g){
+    g.querySelectorAll('line, path').forEach(function(el){
+      var cl = el.cloneNode(false);
+      cl.setAttribute('stroke', 'transparent');
+      cl.setAttribute('stroke-width', '14');
+      cl.setAttribute('pointer-events', 'stroke');
+      cl.removeAttribute('stroke-dasharray');
+      cl.removeAttribute('opacity');
+      cl.removeAttribute('filter');
+      cl.setAttribute('class', 'bp-hit bp-hit-edge');
+      cl.setAttribute('data-from', g.getAttribute('data-from'));
+      cl.setAttribute('data-to', g.getAttribute('data-to'));
+      cl.style.cursor = 'pointer';
+      overlay.appendChild(cl);
+    });
+  });
+  // node hit areas on top — clone actual geometry for pixel-accurate targets
+  document.querySelectorAll('.bp-node').forEach(function(g){
+    var id = g.getAttribute('data-id');
+    var wrap = document.createElementNS(ns, 'g');
+    wrap.setAttribute('class', 'bp-hit bp-hit-node');
+    wrap.setAttribute('data-id', id);
+    wrap.style.cursor = 'pointer';
+    g.querySelectorAll('polygon, path, ellipse').forEach(function(el){
+      var cl = el.cloneNode(false);
+      cl.setAttribute('fill', 'transparent');
+      cl.setAttribute('stroke', 'transparent');
+      cl.setAttribute('stroke-width', '4');
+      cl.setAttribute('pointer-events', 'all');
+      cl.removeAttribute('opacity');
+      cl.removeAttribute('filter');
+      wrap.appendChild(cl);
+    });
+    if(wrap.childNodes.length) overlay.appendChild(wrap);
+  });
+  svg.appendChild(overlay);
+})();
+})();
+</script>
+</body>
+</html>""" % {
+        "title": title,
+        "paper": S["paper"], "paper_edge": S["paper_edge"],
+        "ink": S["ink"], "ink_soft": S["ink_soft"], "ink_faint": S["ink_faint"],
+        "accent": S["accent"], "accent2": S["accent2"],
+        "face_top": S["face_top"], "face_right": S["face_right"],
+        "face_left": S["face_left"],
+        "svg": svg_body,
+        "manifest": manifest_json,
+        "skin": skin_json,
+        "edge_kinds": json.dumps(EDGE_KIND_LABELS),
+    }
 
 
 def main():
@@ -1242,6 +1694,8 @@ def main():
     ap.add_argument("--skin", default=None,
                     help="override spec skin: " + ", ".join(sorted(SK.SKINS)))
     ap.add_argument("--pdf", default=None, help="also write a PDF at this path")
+    ap.add_argument("--html", default=None,
+                    help="write an interactive HTML page at this path")
     ap.add_argument("--profile", default=None,
                     help="symbol profile: software, plant, a path, or off")
     ap.add_argument("--enforce", default=None,
@@ -1262,6 +1716,13 @@ def main():
     with open(out, "w") as fh:
         fh.write(svg)
     print("wrote %s (%.0f KB)" % (out, len(svg) / 1024.0))
+
+    if a.html:
+        manifest = build_manifest(spec)
+        html = render_html(svg, manifest)
+        with open(a.html, "w") as fh:
+            fh.write(html)
+        print("wrote %s (%.0f KB)" % (a.html, len(html) / 1024.0))
 
     if a.pdf:
         here = os.path.dirname(os.path.abspath(__file__))
