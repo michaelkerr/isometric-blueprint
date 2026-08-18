@@ -308,7 +308,7 @@ def build_defs(S):
     for key in ("ink", "ink_soft", "ink_faint", "accent", "accent2"):
         d.append(
             '<marker id="ar-%s" viewBox="0 0 10 8" refX="9" refY="4" '
-            'markerWidth="7" markerHeight="6" orient="auto">'
+            'markerWidth="10" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">'
             '<path d="M0 0 L10 4 L0 8 L2.6 4 Z" fill="%s"/></marker>'
             % (key, S[key]))
     d.append('</defs>')
@@ -1642,6 +1642,8 @@ document.getElementById('panel-close').addEventListener('click', function(){
       cl.removeAttribute('stroke-dasharray');
       cl.removeAttribute('opacity');
       cl.removeAttribute('filter');
+      cl.removeAttribute('marker-start');
+      cl.removeAttribute('marker-end');
       cl.setAttribute('class', 'bp-hit bp-hit-edge');
       cl.setAttribute('data-from', g.getAttribute('data-from'));
       cl.setAttribute('data-to', g.getAttribute('data-to'));
